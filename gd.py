@@ -8,6 +8,7 @@
     images. It has been extended in some ways from the original GD library.
 """
 
+from __future__ import absolute_import
 import _gd
 from _gd import *
 del image

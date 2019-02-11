@@ -1,7 +1,10 @@
 # Setup for gdmodule 0.50 and later
 
+from __future__ import absolute_import
+from __future__ import print_function
 from distutils.core import setup, Extension
-import os, glob, sys, string, commands
+import os, glob, sys, string, subprocess
+from six.moves import range
 
 # version of this gdmodule package
 this_version = "0.59"
@@ -26,11 +29,11 @@ def filetest(path, names):
             if found:
                 rlst.append(names[i])
                 names[i] = None
-        names = filter(None, names)
+        names = [_f for _f in names if _f]
     return rlst
 
 def remove(itm, lst):
-    r = range(len(lst))
+    r = list(range(len(lst)))
     r.reverse()
     for i in r:
         if lst[i] == itm:
@@ -87,12 +90,12 @@ if "ttf" in missing and "freetype" not in missing:
     remove("ttf", missing)
 
 if missing:
-    print "WARNING:  Missing", string.join(missing, ", "), "Libraries"
+    print("WARNING:  Missing", string.join(missing, ", "), "Libraries")
 
 # hand-clean the libs
 
 if "gd" not in libs:
-    print "Can't find GD library."
+    print("Can't find GD library.")
     sys.exit(0)
 
 if "ttf" in libs and "freetype" in libs:
@@ -126,7 +129,7 @@ setup(name="gdmodule", version=this_version,
     url="http://newcenturycomputers.net/projects/gdmodule.html",
     py_modules=["gd"],
     ext_modules=[
-        Extension("_gd", ["_gdmodule.c"], 
+        Extension("_gd", ["_gdmodule.c"],
             include_dirs=incdirs, library_dirs=libdirs,
             libraries=libs, define_macros=macros)],
 )
