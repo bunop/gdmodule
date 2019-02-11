@@ -3,23 +3,27 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from distutils.core import setup, Extension
-import os, glob, sys, string, subprocess
-from six.moves import range
+import os
+import glob
+import sys
+import string
+import subprocess
 
 # version of this gdmodule package
-this_version = "0.59"
+this_version = "0.60"
+
 
 # directory existence tester
-
 def dirtest(lst):
     rlst = []
     for d in lst:
         try:
             if os.listdir(d):
                 rlst.append(d)
-        except:
+        except Exception:
             pass
     return rlst
+
 
 def filetest(path, names):
     rlst = []
@@ -32,6 +36,7 @@ def filetest(path, names):
         names = [_f for _f in names if _f]
     return rlst
 
+
 def remove(itm, lst):
     r = list(range(len(lst)))
     r.reverse()
@@ -39,9 +44,9 @@ def remove(itm, lst):
         if lst[i] == itm:
             del lst[i]
 
+
 # library_dirs option is rather non-portable, but since I am targetting
 # Unixoid OS's I will just look for the usual suspects.
-
 libdirs = dirtest([
     "/usr/local/lib", "/sw/lib", "/usr/lib",
     "/usr/lib/i386-linux-gnu", "/usr/lib/x86_64-linux-gnu",
@@ -50,9 +55,10 @@ libdirs = dirtest([
 ])
 
 try:
-    exotic_libdir = commands.getoutput("gdlib-config --libdir"),
-    libdirs += exotic_libdir
-except:
+    exotic_libdir = subprocess.check_output(
+        ["gdlib-config", "--libdir"]).strip()
+    libdirs += [exotic_libdir.decode("ascii")]
+except Exception:
     pass
 
 # include_dirs are also non-portable; same trick here.
@@ -64,9 +70,10 @@ incdirs = dirtest([
 ])
 
 try:
-    exotic_incdir = commands.getoutput("gdlib-config --includedir"),
-    incdirs += exotic_incdir
-except:
+    exotic_incdir = subprocess.check_output(
+        ["gdlib-config", "--includedir"]).strip()
+    incdirs += [exotic_incdir.decode("ascii")]
+except Exception:
     pass
 
 # Try to identify our libraries
@@ -115,11 +122,13 @@ if "z" in libs and "png" not in libs:
 macros = []
 
 for l in libs:
-    macros.append(( "HAVE_LIB%s" % l.upper(), None ))
+    macros.append(("HAVE_LIB%s" % l.upper(), None))
 
 # OK, now do it!
 
-setup(name="gdmodule", version=this_version,
+setup(
+    name="gdmodule",
+    version=this_version,
 
     description="GD Package",
     long_description="GD Package",
@@ -127,11 +136,15 @@ setup(name="gdmodule", version=this_version,
     author_email="chris.gonnerman@newcenturycomputers.net",
 
     url="http://newcenturycomputers.net/projects/gdmodule.html",
+
     py_modules=["gd"],
     ext_modules=[
-        Extension("_gd", ["_gdmodule.c"],
+        Extension(
+            "_gd",
+            ["_gdmodule.c"],
             include_dirs=incdirs, library_dirs=libdirs,
-            libraries=libs, define_macros=macros)],
+            libraries=libs, define_macros=macros)
+    ],
 )
 
 # end of file.

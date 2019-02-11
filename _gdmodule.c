@@ -2,11 +2,15 @@
 Copyright 1995 Richard Jones, Bureau of Meteorology Australia.
 richard@bofh.asn.au
 
-Current maintainer is 
+Current maintainer is
     Chris Gonnerman <chris.gonnerman@newcenturycomputers.net>
 Please direct all questions and problems to me.
 
 This module is a python wrapper for the GD library (version 1.8.3)
+
+version 0.60
+Porting from python2 to python3
+    -- redefinition of staticforward to static
 
 version 0.56
 Revised 03/10/2005 by Chris Gonnerman
@@ -25,7 +29,7 @@ version 0.54
 Revised 03/03/2005 by Chris Gonnerman
     -- corrected error in the gd.image() constructor, pointed out
        by Betty Li.
-    -- corrected yet another obvious error reported by Greg Hewgill, 
+    -- corrected yet another obvious error reported by Greg Hewgill,
        regarding an incorrect call to gdImagePolygon when fillcolor
        is not equal to 1.
     -- implemented the saveAlpha and alphaBlending features as
@@ -53,9 +57,9 @@ Revised 06/10/2004 by Chris Gonnerman
 
 version 0.52
 Revised 02/03/2004 by Chris Gonnerman
-    -- incorporated new functions from the matplotlib project 
+    -- incorporated new functions from the matplotlib project
        (provided by John Hunter)
-    -- corrected error in PyObject_HEAD_INIT() call noted by 
+    -- corrected error in PyObject_HEAD_INIT() call noted by
        Stefan R Kuzminski (thanks!)
 
 version 0.51
@@ -64,8 +68,8 @@ Revised 09/24/2003 by Chris Gonnerman
 
 version 0.50
 Revised 09/13/2003 by Chris Gonnerman
-    -- documentation change only: the GD library must be version 
-       2.0.8 or higher (or you must choose version 0.40 or earlier 
+    -- documentation change only: the GD library must be version
+       2.0.8 or higher (or you must choose version 0.40 or earlier
        of this module, which supports GD 1.8.3 or higher).
 
 version 0.42
@@ -74,19 +78,19 @@ Revised 06/10/2003 by Chris Gonnerman
        arbitrary objects, superceding the patch in 0.41 from
        Andreas Rottman.  gddemo.py contains Rottman's example
        (which works with Smith's patched version) as well as an
-       example (by me) of reading an image from a URL.  The 
+       example (by me) of reading an image from a URL.  The
        documentation was updated to reflect these changes.
 
 version 0.41
 Revised 05/29/2003 by Chris Gonnerman
-    -- implemented big patch by Andreas Rottmann to support writing 
-       images to memory via StringIO/CStringIO.  Currently the only 
+    -- implemented big patch by Andreas Rottmann to support writing
+       images to memory via StringIO/CStringIO.  Currently the only
        documentation is an example in gddemo.py.
-    -- implemented patch by Bob Galloway to remove the "specialness" 
+    -- implemented patch by Bob Galloway to remove the "specialness"
        of negative coordinates in the string_ttf/string_ft methods.
-    -- implemented patch by Nathan Robertson to enable MacOSX fink 
+    -- implemented patch by Nathan Robertson to enable MacOSX fink
        builds.
-    -- fixed bugs in the proxy class with regard to passing of 
+    -- fixed bugs in the proxy class with regard to passing of
        _gd.image types.
 
 version 0.40
@@ -112,7 +116,7 @@ Revised 08/08/2001 by Chris Gonnerman
     -- implemented patch by Mike Romberg:
         supports GCC 3.0 and GD 2.0.1
         adds public C function makeGDImage()
-            It allows C or C++ code which uses the gd library 
+            It allows C or C++ code which uses the gd library
             directly to make an imageobject instance.
 
 version 0.23
@@ -180,7 +184,8 @@ static fontstruct fonts[] = {
   {NULL,NULL}
 };
 
-staticforward PyTypeObject Imagetype;
+// staticforward was a workaround for compatibility with certain compilers
+static PyTypeObject Imagetype;
 
 #define is_imageobject(v)        ((v)->ob_type == &Imagetype)
 
@@ -415,7 +420,7 @@ static PyObject *image_lines(imageobject *self, PyObject *args)
                     "lines() requires sequence of len(2) or greater");
       return NULL;
     }
-    
+
     lastTup = PySequence_GetItem(seq, 0);
     sx = X(PyInt_AsLong(PySequence_GetItem(lastTup, 0)));
     sy = Y(PyInt_AsLong(PySequence_GetItem(lastTup, 1)));
@@ -1003,7 +1008,7 @@ static PyObject *image_string16(imageobject *self, PyObject *args)
 
     if(!PyArg_ParseTuple(args, "i(ii)ui", &font,&x,&y,&ustr,&color))
         return NULL;
-    gdImageString16(self->imagedata, fonts[font].func(), X(x), Y(y), 
+    gdImageString16(self->imagedata, fonts[font].func(), X(x), Y(y),
                     (short unsigned int *)ustr, color);
 
     Py_INCREF(Py_None);
@@ -1839,7 +1844,7 @@ struct PyFileIfaceObj_gdIOCtx * alloc_PyFileIfaceObj_IOCtx(PyObject *fileIfaceOb
     pctx = calloc(1, sizeof(struct PyFileIfaceObj_gdIOCtx));
     if (!pctx)
         return NULL;
-    pctx->ctx.getC = PyFileIfaceObj_IOCtx_GetC; 
+    pctx->ctx.getC = PyFileIfaceObj_IOCtx_GetC;
     pctx->ctx.getBuf = PyFileIfaceObj_IOCtx_GetBuf;
     pctx->ctx.gd_free = PyFileIfaceObj_IOCtx_Free;
     Py_INCREF(fileIfaceObj);
@@ -1876,13 +1881,13 @@ static imageobject *newimageobject(PyObject *args)
     self->imagedata = NULL;
 
     if(PyArg_ParseTuple(args, "")) {
-        PyErr_SetString(PyExc_ValueError, 
+        PyErr_SetString(PyExc_ValueError,
             "image size or source filename required");
         Py_DECREF(self);
         return NULL;
-    } else if(PyErr_Clear(), 
-        PyArg_ParseTuple(args, "O!|(ii)i", 
-            &Imagetype, &srcimage, &xdim, &ydim, &trueColor)) 
+    } else if(PyErr_Clear(),
+        PyArg_ParseTuple(args, "O!|(ii)i",
+            &Imagetype, &srcimage, &xdim, &ydim, &trueColor))
     {
         if(!xdim) xdim = gdImageSX(srcimage->imagedata);
         if(!ydim) ydim = gdImageSY(srcimage->imagedata);
@@ -1909,14 +1914,14 @@ static imageobject *newimageobject(PyObject *args)
             gdImageCopyResized(self->imagedata,srcimage->imagedata,
                 0,0,0,0,xdim,ydim,gdImageSX(srcimage->imagedata),
                 gdImageSY(srcimage->imagedata));
-    } else if(PyErr_Clear(), 
-        PyArg_ParseTuple(args, "(ii)|i", &xdim, &ydim, &trueColor)) 
+    } else if(PyErr_Clear(),
+        PyArg_ParseTuple(args, "(ii)|i", &xdim, &ydim, &trueColor))
     {
         if(!xdim || !ydim) {
             PyErr_SetString(PyExc_ValueError, "dimensions cannot be 0");
             Py_DECREF(self);
             return NULL;
-        } 
+        }
 #if GD2_VERS <= 1
         trueColor = 0;
 #endif
@@ -1995,8 +2000,8 @@ static imageobject *newimageobject(PyObject *args)
         Py_DECREF(self);
         return(NULL);
 
-    } else if(PyErr_Clear(), 
-        PyArg_ParseTuple(args, "Oz", &readObj, &ext)) 
+    } else if(PyErr_Clear(),
+        PyArg_ParseTuple(args, "Oz", &readObj, &ext))
     {
         struct PyFileIfaceObj_gdIOCtx *ourIOCtx = NULL;
 
